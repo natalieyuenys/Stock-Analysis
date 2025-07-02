@@ -15,15 +15,15 @@ class TechStockSentimentExtractor:
         # Top tech company tickers for 2025
         self.tech_tickers = {
             'AAPL': 'Apple Inc.',
-#            'MSFT': 'Microsoft Corporation', 
-#            'GOOGL': 'Alphabet Inc.',
-#            'AMZN': 'Amazon.com Inc.',
-#            'META': 'Meta Platforms Inc.',
-#            'TSLA': 'Tesla Inc.',
-#            'NVDA': 'NVIDIA Corporation',
-#            'NFLX': 'Netflix Inc.',
-#            'CRM': 'Salesforce Inc.',
-#            'AMD': 'Advanced Micro Devices'
+            'MSFT': 'Microsoft Corporation', 
+            'GOOGL': 'Alphabet Inc.',
+            'AMZN': 'Amazon.com Inc.',
+            'META': 'Meta Platforms Inc.',
+            'TSLA': 'Tesla Inc.',
+            'NVDA': 'NVIDIA Corporation',
+            'NFLX': 'Netflix Inc.',
+            'CRM': 'Salesforce Inc.',
+            'AMD': 'Advanced Micro Devices'
         }
     
     def get_sentiment_data(self, ticker, limit=50, time_from=None, time_to=None):
@@ -63,11 +63,26 @@ class TechStockSentimentExtractor:
         if not news_data or 'feed' not in news_data:
             return None
         
+        records = []
         # Extract sentiment scores for the specific ticker
-        articles = news_data.get('feed', [])
-        df = pd.DataFrame(articles)
+        for article in news_data.get('feed', []):
+            # Find sentiment for the target company in ticker_sentiment
+            ticker_sentiments = article.get('ticker_sentiment', [])
+            for ts in ticker_sentiments:
+                if ts.get('ticker') == ticker:
+                    records.append({
+                        'title': article.get('title'),
+                        'url': article.get('url'),
+                        'summary': article.get('summary'),
+                        'source': article.get('source'),    
+                        'published_date': article.get('time_published'),
+                        'sentiment_score': ts.get('ticker_sentiment_score')
+                    })
 
+        df = pd.DataFrame(records)
+        
         return df
+    
 
     def extract_all_tech_sentiment(self, save_to_csv=True):
         """Extract sentiment data for all top tech companies"""
@@ -78,17 +93,23 @@ class TechStockSentimentExtractor:
         for i, (ticker, company_name) in enumerate(self.tech_tickers.items(), 1):
             print(f"Processing {i}/{len(self.tech_tickers)}: {ticker} ({company_name})")
             
-            sentiment_data = self.get_sentiment_data(ticker, limit=100)
-            
-            if sentiment_data:
-                processed_data = self.process_sentiment_score(sentiment_data, ticker)
-                if not processed_data.empty:
-                    processed_data['company_name'] = company_name
-                    results = pd.concat([results,processed_data], axis=0)
-                    
+            monthly_data = pd.DataFrame()
+            for month in range(1, 7):
+                datestart = '2025{:02d}01T0000'.format(month)
+                dateend = '2025{:02d}01T0000'.format(month + 1) 
+                sentiment_data = self.get_sentiment_data(ticker, limit=1000, time_from=datestart, time_to=dateend)
+                
+                if sentiment_data:
+                    processed_data = self.process_sentiment_score(sentiment_data, ticker)
+                    if not processed_data.empty:
+                        processed_data['company_name'] = company_name
+                        monthly_data = pd.concat([monthly_data, processed_data], axis=0)
+
+            results = pd.concat([results,monthly_data], axis=0)
+                
 
         if save_to_csv and not results.empty:
-            filename = f'tech_stock_sentiment_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+            filename = f'data/tech_stock_sentiment_by_article.csv'
             results.to_csv(filename, index=False)
             print(f"\nData saved to: {filename}")
         
