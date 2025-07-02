@@ -6,12 +6,11 @@ import time
 import os
 from dotenv import load_dotenv
 
-
-class TechStockSentimentExtractor:
+class SharedMethods:
     def __init__(self, api_key=None):
         self.api_key = api_key
         self.base_url = "https://www.alphavantage.co/query"
-        
+
         # Top tech company tickers for 2025
         self.tech_tickers = {
             'AAPL': 'Apple Inc.',
@@ -25,6 +24,11 @@ class TechStockSentimentExtractor:
             'CRM': 'Salesforce Inc.',
             'AMD': 'Advanced Micro Devices'
         }
+
+#class DailyAdjustedPriceExtractor(SharedMethods):
+
+
+class TechStockSentimentExtractor(SharedMethods):
     
     def get_sentiment_data(self, ticker, limit=50, time_from=None, time_to=None):
         """Extract sentiment data using Alpha Vantage News Sentiment API"""
