@@ -181,5 +181,5 @@ if __name__ == "__main__":
     if not api_key: 
         print("Please set the ALPHA_VANTAGE_API_KEY environment variable.")
 
-    # sentiment_df = TechStockSentimentExtractor(api_key).extract_all_tech_sentiment(save_to_csv=True)
-    price_df = DailyAdjustedPriceExtractor(api_key).extract_all_tech_price()
+    sentiment_df = TechStockSentimentExtractor(api_key).extract_all_tech_sentiment(save_to_csv=True)
+    price_df = DailyAdjustedPriceExtractor(api_key).extract_all_tech_price(save_to_csv=True)
