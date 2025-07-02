@@ -44,7 +44,56 @@ class SharedMethods:
             print(f"Error fetching data for {ticker}: {e}")
             return None
 
-#class DailyAdjustedPriceExtractor(SharedMethods):
+class DailyAdjustedPriceExtractor(SharedMethods):
+    def get_price_params(self, ticker, function='TIME_SERIES_DAILY_ADJUSTED', outputsize='compact'):
+        """Extract daily adjusted price data using Alpha Vantage API"""
+        params = {
+            'function': function,
+            'symbol': ticker,
+            'apikey': self.api_key,
+            'outputsize': outputsize
+        }
+        return params
+    
+    def process_price_data(self, price_data):
+        time_series = price_data['Time Series (Daily)']
+
+        # Build a DataFrame of close prices
+        df_close = pd.DataFrame(
+            [(date, float(day_data['4. close'])) for date, day_data in time_series.items()],
+            columns=['Date', 'Close']
+        )
+        df_close['Date'] = pd.to_datetime(df_close['Date'])
+
+        return df_close
+
+    def extract_all_tech_price(self, save_to_csv=True):
+        """Extract sentiment data for all top tech companies"""
+        results = pd.DataFrame()
+        
+        print("Starting sentiment extraction for top tech companies...")
+        
+        for i, (ticker, company_name) in enumerate(self.tech_tickers.items(), 1):
+            print(f"Processing {i}/{len(self.tech_tickers)}: {ticker} ({company_name})")
+            
+            params = self.get_price_params(ticker)
+            price_data = self.get_data(params=params, ticker=ticker)
+            
+            if price_data:
+                df_price = self.process_price_data(price_data)
+                if not df_price.empty:
+                    df_price['ticker'] = ticker
+                    df_price['company_name'] = company_name
+
+            results = pd.concat([results,df_price], axis=0)
+                
+
+        if save_to_csv and not results.empty:
+            filename = f'data/tech_stock_daily_price.csv'
+            results.to_csv(filename, index=False)
+            print(f"\nData saved to: {filename}")
+        
+        return results
 
 
 class TechStockSentimentExtractor(SharedMethods):
@@ -111,6 +160,7 @@ class TechStockSentimentExtractor(SharedMethods):
                 if sentiment_data:
                     processed_data = self.process_sentiment_score(sentiment_data, ticker)
                     if not processed_data.empty:
+                        processed_data['ticker'] = ticker
                         processed_data['company_name'] = company_name
                         monthly_data = pd.concat([monthly_data, processed_data], axis=0)
 
@@ -131,5 +181,5 @@ if __name__ == "__main__":
     if not api_key: 
         print("Please set the ALPHA_VANTAGE_API_KEY environment variable.")
 
-    extractor = TechStockSentimentExtractor(api_key)
-    sentiment_df = extractor.extract_all_tech_sentiment(save_to_csv=True)
+    # sentiment_df = TechStockSentimentExtractor(api_key).extract_all_tech_sentiment(save_to_csv=True)
+    price_df = DailyAdjustedPriceExtractor(api_key).extract_all_tech_price()
