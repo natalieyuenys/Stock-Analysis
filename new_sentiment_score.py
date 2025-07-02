@@ -25,26 +25,8 @@ class SharedMethods:
             'AMD': 'Advanced Micro Devices'
         }
 
-#class DailyAdjustedPriceExtractor(SharedMethods):
-
-
-class TechStockSentimentExtractor(SharedMethods):
     
-    def get_sentiment_data(self, ticker, limit=50, time_from=None, time_to=None):
-        """Extract sentiment data using Alpha Vantage News Sentiment API"""
-        
-        params = {
-            'function': 'NEWS_SENTIMENT',
-            'tickers': ticker,
-            'apikey': self.api_key,
-            'limit': limit
-        }
-        
-        if time_from:
-            params['time_from'] = time_from
-        if time_to:
-            params['time_to'] = time_to
-            
+    def get_data(self, params, ticker):
         try:
             response = requests.get(self.base_url, params=params)
             data = response.json()
@@ -61,6 +43,28 @@ class TechStockSentimentExtractor(SharedMethods):
         except Exception as e:
             print(f"Error fetching data for {ticker}: {e}")
             return None
+
+#class DailyAdjustedPriceExtractor(SharedMethods):
+
+
+class TechStockSentimentExtractor(SharedMethods):
+
+    def get_sentiment_params(self, ticker, function, limit=50, time_from=None, time_to=None):
+        """Extract sentiment data using Alpha Vantage News Sentiment API"""
+        
+        params = {
+            'function': function,
+            'tickers': ticker,
+            'apikey': self.api_key,
+            'limit': limit
+        }
+        
+        if time_from:
+            params['time_from'] = time_from
+        if time_to:
+            params['time_to'] = time_to
+        
+        return params
 
     def process_sentiment_score(self, news_data, ticker):
         """Calculate aggregate sentiment score from news data"""
@@ -101,7 +105,8 @@ class TechStockSentimentExtractor(SharedMethods):
             for month in range(1, 7):
                 datestart = '2025{:02d}01T0000'.format(month)
                 dateend = '2025{:02d}01T0000'.format(month + 1) 
-                sentiment_data = self.get_sentiment_data(ticker, limit=1000, time_from=datestart, time_to=dateend)
+                params = self.get_sentiment_params(ticker, function='NEWS_SENTIMENT', limit=1000, time_from=datestart, time_to=dateend)
+                sentiment_data = self.get_data(params=params, ticker=ticker)
                 
                 if sentiment_data:
                     processed_data = self.process_sentiment_score(sentiment_data, ticker)
