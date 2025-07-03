@@ -1,4 +1,4 @@
 # Stock-Analysis
 
 1. Analyse correlation between Price and Avg Sentiment Score
-![image](https://github.com/user-attachments/assets/4856b1d6-1bd0-4a16-a13f-8df556ea35f3)
+![image](https://github.com/user-attachments/assets/fe03443d-8ffa-458f-826e-dc5b5d4bc3a1)
