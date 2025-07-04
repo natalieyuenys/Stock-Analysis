@@ -45,7 +45,7 @@ class SharedMethods:
             return None
 
 class DailyAdjustedPriceExtractor(SharedMethods):
-    def get_price_params(self, ticker, function='TIME_SERIES_DAILY_ADJUSTED', outputsize='compact'):
+    def get_price_params(self, ticker, function='TIME_SERIES_DAILY_ADJUSTED', outputsize='full'):
         """Extract daily adjusted price data using Alpha Vantage API"""
         params = {
             'function': function,
@@ -71,7 +71,7 @@ class DailyAdjustedPriceExtractor(SharedMethods):
         """Extract sentiment data for all top tech companies"""
         results = pd.DataFrame()
         
-        print("Starting sentiment extraction for top tech companies...")
+        print("Starting price extraction for top tech companies...")
         
         for i, (ticker, company_name) in enumerate(self.tech_tickers.items(), 1):
             print(f"Processing {i}/{len(self.tech_tickers)}: {ticker} ({company_name})")
