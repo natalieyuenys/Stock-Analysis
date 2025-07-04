@@ -32,23 +32,24 @@ class FundamentalDataExtractor:
         balance_dfs = []
         cashflow_dfs = []
         overview_dfs = []
+        earnings_dfs = []
 
         for i, (ticker, company_name) in enumerate(self.tech_tickers.items(), 1):
             print(f"Processing {i}/{len(Extractor.tech_tickers)}: {ticker} ({company_name})")
 
             try:
                 # Income Statement
-                income, _ = fd.get_income_statement_annual(symbol=ticker)
+                income, _ = fd.get_income_statement_quarterly(symbol=ticker)
                 income['symbol'] = ticker
                 income_dfs.append(income)
                 
                 # Balance Sheet
-                balance, _ = fd.get_balance_sheet_annual(symbol=ticker)
+                balance, _ = fd.get_balance_sheet_quarterly(symbol=ticker)
                 balance['symbol'] = ticker
                 balance_dfs.append(balance)
                 
                 # Cash Flow Statement
-                cashflow, _ = fd.get_cash_flow_annual(symbol=ticker)
+                cashflow, _ = fd.get_cash_flow_quarterly(symbol=ticker)
                 cashflow['symbol'] = ticker
                 cashflow_dfs.append(cashflow)
                 
@@ -57,16 +58,22 @@ class FundamentalDataExtractor:
                 overview['symbol'] = ticker
                 overview_dfs.append(overview)
                 
+                # Earnings
+                earnings, _ = fd.get_earnings_quarterly(symbol=ticker)
+                earnings['symbol'] = ticker
+                earnings_dfs.append(earnings)    
+                
             except Exception as e:
                 print(f"Error for {ticker}: {e}")
 
         # Concatenate each list of DataFrames into a single DataFrame
+        df_overview = pd.concat(overview_dfs, ignore_index=True)
         df_income = pd.concat(income_dfs, ignore_index=True)
         df_balance = pd.concat(balance_dfs, ignore_index=True)
         df_cashflow = pd.concat(cashflow_dfs, ignore_index=True)
-        df_overview = pd.concat(overview_dfs, ignore_index=True)
+        df_earnings = pd.concat(earnings_dfs, ignore_index=True)
 
-        return df_overview, df_income, df_balance, df_cashflow
+        return df_overview, df_income, df_balance, df_cashflow, df_earnings
 
 if __name__ == "__main__":
     load_dotenv()
@@ -76,9 +83,10 @@ if __name__ == "__main__":
     
     Extractor = FundamentalDataExtractor(api_key)
     
-    overview, income, balance, cashflow = Extractor.get_fundamentals()
+    overview, income, balance, cashflow, earnings = Extractor.get_fundamentals()
 
     overview.to_csv('data/company_overview.csv', index=False)
     income.to_csv('data/income_statement.csv', index=False)      
     balance.to_csv('data/balance_sheet.csv', index=False)
     cashflow.to_csv('data/cash_flow_statement.csv', index=False) 
+    earnings.to_csv('data/earnings.csv', index=False)
