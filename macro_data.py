@@ -28,7 +28,7 @@ class MacroDataExtractor(SharedMethods):
         self.macro_functions = [
             'REAL_GDP', 'REAL_GDP_PER_CAPITA', 'FEDERAL_FUNDS_RATE',
             'UNEMPLOYMENT', 'INFLATION', 'INFLATION_EXPECTATION',
-            'CPI', 'Treasury_Yield'
+            'CPI', 'Treasury_Yield','RETAIL_SALES'
         ]
         self.treasury_maturities = [1, 2, 3, 5, 7, 10, 20, 30]
 
@@ -46,7 +46,7 @@ class MacroDataExtractor(SharedMethods):
                 'interval': 'monthly',
                 'apikey': self.api_key,
             }
-        elif function in ['UNEMPLOYMENT','INFLATION','INFLATION_EXPECTATION','RETAIL_SALES','CONSUMER_SENTIMENT']:  
+        elif function in ['UNEMPLOYMENT','INFLATION','INFLATION_EXPECTATION','RETAIL_SALES']:  
             params = {
                 'function': function,
                 'apikey': self.api_key,
@@ -54,7 +54,7 @@ class MacroDataExtractor(SharedMethods):
         elif function in ['Treasury_Yield']:
             params = {
                 'function': function,
-                'interval': 'monthly',
+                'interval': 'daily',
                 'maturity': "{}year".format(treasury_maturity),
                 'apikey': self.api_key,
             }
