@@ -34,13 +34,19 @@ class MacroDataExtractor(SharedMethods):
 
     def get_params(self, function, treasury_maturity):
         
-        if function in ['REAL_GDP','REAL_GDP_PER_CAPITA','FEDERAL_FUNDS_RATE', 'CPI'] :
+        if function in ['REAL_GDP','REAL_GDP_PER_CAPITA'] :
             params = {
                 'function': function,
                 'interval': 'quarterly',
                 'apikey': self.api_key,
             }
-        elif function in ['UNEMPLOYMENT','INFLATION','INFLATION_EXPECTATION']:  
+        if function in ['FEDERAL_FUNDS_RATE', 'CPI'] :
+            params = {
+                'function': function,
+                'interval': 'monthly',
+                'apikey': self.api_key,
+            }
+        elif function in ['UNEMPLOYMENT','INFLATION','INFLATION_EXPECTATION','RETAIL_SALES','CONSUMER_SENTIMENT']:  
             params = {
                 'function': function,
                 'apikey': self.api_key,
