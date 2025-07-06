@@ -75,6 +75,7 @@ class MacroDataExtractor(SharedMethods):
                         df = pd.DataFrame(data['data'])
                         df['maturity'] = maturity
                         df['function'] = function
+                        df = df[df['date']>='2024-01-01']
                         results = pd.concat([results, df], ignore_index=True)
             else:
                 params = self.get_params(function, None)
