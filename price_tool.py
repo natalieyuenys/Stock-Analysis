@@ -12,21 +12,6 @@ class SharedMethods:
         self.api_key = api_key
         self.base_url = "https://www.alphavantage.co/query"
 
-        # # Top tech company tickers for 2025
-        # self.tech_tickers = {
-        #     'AAPL': 'Apple Inc.',
-        #     'MSFT': 'Microsoft Corporation', 
-        #     'GOOGL': 'Alphabet Inc.',
-        #     'AMZN': 'Amazon.com Inc.',
-        #     'META': 'Meta Platforms Inc.',
-        #     'TSLA': 'Tesla Inc.',
-        #     'NVDA': 'NVIDIA Corporation',
-        #     'NFLX': 'Netflix Inc.',
-        #     'CRM': 'Salesforce Inc.',
-        #     'AMD': 'Advanced Micro Devices',
-        #     'SPY': 'SPDR S&P 500 ETF Trust',
-        # }
-
     def get_data(self, params, ticker):
         try:
             response = requests.get(self.base_url, params=params)
