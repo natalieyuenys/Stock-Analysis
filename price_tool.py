@@ -137,7 +137,7 @@ class DailyAdjustedPriceExtractor(SharedMethods):
                 
 
         if save_to_csv and not results.empty:
-            filename = f'data/SP500_daily_price.csv'
+            filename = "data/SP500_daily_price_{}.csv".format(datetime.now().strftime('%Y%m%d_%H%M%S'))
             results.to_csv(filename, index=False)
             print(f"\nData saved to: {filename}")
         
@@ -153,6 +153,7 @@ if __name__ == "__main__":
         print("Please set the ALPHA_VANTAGE_API_KEY environment variable.")
 
     # sector_list = SectorExtractor(api_key).extract_sector_data()
-    df_ticker_list = pd.read_csv('data/sector_data.csv')
-    df_ticker_list = df_ticker_list.set_index('Symbol')['Name'].to_dict()
+    # df_ticker_list = pd.read_csv('data/sector_data.csv')
+    # df_ticker_list = df_ticker_list.set_index('Symbol')['Name'].to_dict()
+    df_ticker_list = {'SPY':'SP500 ETF',}
     price_df = DailyAdjustedPriceExtractor(api_key).extract_price(df_ticker_list, save_to_csv=True)
