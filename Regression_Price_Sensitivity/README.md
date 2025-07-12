@@ -9,7 +9,7 @@ Data range: from 2024-01-01
 
 
 Opportunity:
--Invest in low-sensitivity stocks when rising rates
+- Invest in low-sensitivity stocks when rising rates
 
 Intersting insights
 - Financial sector seem to have adapted to the "Higher-for-longer" interst rate environment
