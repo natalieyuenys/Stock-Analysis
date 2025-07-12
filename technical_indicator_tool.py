@@ -47,7 +47,7 @@ class TechnicalIndicatorExtractor(SharedMethods):
                 'time_period': time_period
                 }
         
-        elif function in ['VWAP','STOCH','WILLR']:
+        elif function in ['VWAP','STOCH']:
             params = {
                 'function': function,
                 'symbol': ticker,
@@ -62,6 +62,14 @@ class TechnicalIndicatorExtractor(SharedMethods):
                 'interval': 'daily',
                 'series_type': 'close',
                 }
+        elif function == 'WILLR':
+            params = {
+                'function': function,
+                'symbol': ticker,
+                'apikey': self.api_key,
+                'interval': 'daily',
+                'time_period': time_period
+                }    
         
         return params
     
@@ -85,20 +93,26 @@ class TechnicalIndicatorExtractor(SharedMethods):
         
         print("Starting price extraction for top tech companies...")
         
-        df_list = []
+        
+        results = pd.DataFrame()
+
         for i, (ticker, company_name) in enumerate(df_ticker_list.items(), 1):
             print(f"Processing {i}/{len(df_ticker_list)}: {ticker} ({company_name})")
-
+            df_list = []
             for function in ['EMA','WMA','RSI','SMA','VWAP','MACD','STOCH','WILLR','BBANDS']:
-                results = pd.DataFrame()    
+                
                 params = self.get_params(ticker,function)
                 data = self.get_data(params=params, ticker=ticker)
                 
                 if data:
                     df = self.process_data(data, function)
-                df_list.append(df)
+                    df_list.append(df)
 
-        results = reduce(lambda left, right: pd.merge(left, right, on='date'), df_list)
+            ticker_result = reduce(lambda left, right: pd.merge(left, right, on='date'), df_list)
+            ticker_result['ticker'] = ticker
+            ticker_result['company_name'] = company_name
+
+            results = pd.concat([results, ticker_result],axis=0)
 
         if save_to_csv and not results.empty:
             filename = "data/technical_data_{}.csv".format(datetime.now().strftime('%Y%m%d_%H%M%S'))
@@ -119,5 +133,6 @@ if __name__ == "__main__":
     # sector_list = SectorExtractor(api_key).extract_sector_data()
     # df_ticker_list = pd.read_csv('data/sector_data.csv')
     # df_ticker_list = df_ticker_list.set_index('Symbol')['Name'].to_dict()
-    df_ticker_list = {'AAPL':'Apple',}
+    df_ticker_list = {'AAPL':'Apple','GOOGL':'Alphabet Inc.','MSFT':'Microsoft Corporation'}
     technical_df = TechnicalIndicatorExtractor(api_key).extract_technical(df_ticker_list, save_to_csv=True)
+
