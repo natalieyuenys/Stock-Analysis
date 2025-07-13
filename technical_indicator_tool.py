@@ -35,7 +35,7 @@ class SharedMethods:
 
 class TechnicalIndicatorExtractor(SharedMethods):
 
-    def get_params(self, ticker, function, time_period=20):
+    def get_params(self, ticker, function, time_period):
         
         if function in ['EMA','WMA','RSI','SMA','BBANDS']:
             params = {
@@ -73,7 +73,7 @@ class TechnicalIndicatorExtractor(SharedMethods):
         
         return params
     
-    def process_data(self, data, function):
+    def process_data(self, data, function, time_period):
 
         """Process the raw data into a DataFrame"""
         if 'Technical Analysis: {}'.format(function) not in data:
@@ -84,6 +84,8 @@ class TechnicalIndicatorExtractor(SharedMethods):
         df = pd.DataFrame.from_dict(data[column_name], orient='index')
         df = df.reset_index(drop=False)
         df = df.rename(columns={'index': 'date'})
+        suffix_dict = {col: col + '_{}'.format(time_period) for col in df.columns if col != 'date'}
+        df = df.rename(columns=suffix_dict)
         df['date'] = (pd.to_datetime(df['date'])).dt.strftime('%Y-%m-%d')
         df = df.sort_values(by='date')
         
@@ -91,7 +93,7 @@ class TechnicalIndicatorExtractor(SharedMethods):
 
     def extract_technical(self, df_ticker_list, save_to_csv=True):
         
-        print("Starting price extraction for top tech companies...")
+        print("Starting extraction for companies...")
         
         
         results = pd.DataFrame()
@@ -100,14 +102,23 @@ class TechnicalIndicatorExtractor(SharedMethods):
             print(f"Processing {i}/{len(df_ticker_list)}: {ticker} ({company_name})")
             df_list = []
             for function in ['EMA','WMA','RSI','SMA','VWAP','MACD','STOCH','WILLR','BBANDS']:
-                
-                params = self.get_params(ticker,function)
-                data = self.get_data(params=params, ticker=ticker)
-                
-                if data:
-                    df = self.process_data(data, function)
-                    df_list.append(df)
+                if function in ['EMA','WMA','RSI','SMA','BBANDS','WILLR']:
+                    for time_period in [5, 10, 20, 30, 50, 100, 200]:
+                        params = self.get_params(ticker, function, time_period)
+                        data = self.get_data(params=params, ticker=ticker)
+                        
+                        if data:
+                            df = self.process_data(data, function, time_period)
+                            df_list.append(df)
 
+                else:
+                    params = self.get_params(ticker, function, None)
+                    data = self.get_data(params=params, ticker=ticker)
+                    
+                    if data:
+                        df = self.process_data(data, function, None)
+                        df_list.append(df)
+                            
             ticker_result = reduce(lambda left, right: pd.merge(left, right, on='date'), df_list)
             ticker_result['ticker'] = ticker
             ticker_result['company_name'] = company_name
@@ -131,8 +142,9 @@ if __name__ == "__main__":
         print("Please set the ALPHA_VANTAGE_API_KEY environment variable.")
 
     # sector_list = SectorExtractor(api_key).extract_sector_data()
-    # df_ticker_list = pd.read_csv('data/sector_data.csv')
-    # df_ticker_list = df_ticker_list.set_index('Symbol')['Name'].to_dict()
-    df_ticker_list = {'AAPL':'Apple','GOOGL':'Alphabet Inc.','MSFT':'Microsoft Corporation'}
+    df_ticker_list = pd.read_csv('data/sector_data.csv')
+    df_ticker_list = df_ticker_list[df_ticker_list['Symbol'].isin(['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'META', 'NVDA', 'TSLA', 'NFLX', 'INTC'])]
+    df_ticker_list = df_ticker_list.set_index('Symbol')['Name'].to_dict()
+
     technical_df = TechnicalIndicatorExtractor(api_key).extract_technical(df_ticker_list, save_to_csv=True)
 
